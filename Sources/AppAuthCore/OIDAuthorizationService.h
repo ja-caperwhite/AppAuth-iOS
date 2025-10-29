@@ -156,6 +156,11 @@ typedef void (^OIDRegistrationCompletion)(OIDRegistrationResponse *_Nullable reg
  */
 + (void)performTokenRequest:(OIDTokenRequest *)request
     originalAuthorizationResponse:(OIDAuthorizationResponse *_Nullable)authorizationResponse
+                    dispatchQueue:(dispatch_queue_t)dispatchQueue
+                         callback:(OIDTokenCallback)callback;
+
++ (void)performTokenRequest:(OIDTokenRequest *)request
+    originalAuthorizationResponse:(OIDAuthorizationResponse *_Nullable)authorizationResponse
                          callback:(OIDTokenCallback)callback;
 
 /*! @brief Performs a registration request.

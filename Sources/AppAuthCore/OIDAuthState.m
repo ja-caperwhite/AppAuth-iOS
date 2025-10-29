@@ -102,6 +102,14 @@ static const NSUInteger kExpiryTimeTolerance = 60;
 
 @end
 
+static dispatch_queue_t dispatch_get_oidAuthStateQueue(void) {
+    static dispatch_queue_t queue;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        queue = dispatch_queue_create("OIDAuthStateQueue", NULL);
+    });
+    return queue;
+}
 
 @implementation OIDAuthState {
   /*! @brief Array of pending actions (use @c _pendingActionsSyncObject to synchronize access).
@@ -547,6 +555,7 @@ static const NSUInteger kExpiryTimeTolerance = 60;
       [self tokenRefreshRequestWithAdditionalParameters:additionalParameters];
   [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
                  originalAuthorizationResponse:_lastAuthorizationResponse
+                                 dispatchQueue: dispatch_get_oidAuthStateQueue()
                                       callback:^(OIDTokenResponse *_Nullable response,
                                                  NSError *_Nullable error) {
     // update OIDAuthState based on response
