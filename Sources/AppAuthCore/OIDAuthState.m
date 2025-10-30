@@ -102,14 +102,7 @@ static const NSUInteger kExpiryTimeTolerance = 60;
 
 @end
 
-static dispatch_queue_t dispatch_get_oidAuthStateQueue(void) {
-    static dispatch_queue_t queue;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        queue = dispatch_queue_create("OIDAuthStateQueue", NULL);
-    });
-    return queue;
-}
+static dispatch_queue_t _sharedDelegateQueue = nil;
 
 @implementation OIDAuthState {
   /*! @brief Array of pending actions (use @c _pendingActionsSyncObject to synchronize access).
@@ -498,6 +491,14 @@ static dispatch_queue_t dispatch_get_oidAuthStateQueue(void) {
   _needsTokenRefresh = YES;
 }
 
++ (void)setSharedDelegateQueue:(dispatch_queue_t)queue {
+  _sharedDelegateQueue = queue;
+}
+
++ (dispatch_queue_t)sharedDelegateQueue {
+  return _sharedDelegateQueue ?: dispatch_get_main_queue();
+}
+
 - (void)performActionWithFreshTokens:(OIDAuthStateAction)action {
   [self performActionWithFreshTokens:action additionalRefreshParameters:nil];
 }
@@ -555,7 +556,7 @@ static dispatch_queue_t dispatch_get_oidAuthStateQueue(void) {
       [self tokenRefreshRequestWithAdditionalParameters:additionalParameters];
   [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
                  originalAuthorizationResponse:_lastAuthorizationResponse
-                                 dispatchQueue: dispatch_get_oidAuthStateQueue()
+                         callbackDispatchQueue:[OIDAuthState sharedDelegateQueue]
                                       callback:^(OIDTokenResponse *_Nullable response,
                                                  NSError *_Nullable error) {
     // update OIDAuthState based on response

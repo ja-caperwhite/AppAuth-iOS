@@ -423,7 +423,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)performTokenRequest:(OIDTokenRequest *)request callback:(OIDTokenCallback)callback {
   [[self class] performTokenRequest:request
       originalAuthorizationResponse:nil
-                      dispatchQueue:dispatch_get_main_queue()
+              callbackDispatchQueue:dispatch_get_main_queue()
                            callback:callback];
 }
 + (void)performTokenRequest:(OIDTokenRequest *)request
@@ -431,13 +431,13 @@ NS_ASSUME_NONNULL_BEGIN
                    callback:(OIDTokenCallback)callback {
     [self performTokenRequest:request
 originalAuthorizationResponse:authorizationResponse
-                dispatchQueue:dispatch_get_main_queue()
+        callbackDispatchQueue:dispatch_get_main_queue()
                      callback:callback];
 }
 
 + (void)performTokenRequest:(OIDTokenRequest *)request
     originalAuthorizationResponse:(OIDAuthorizationResponse *_Nullable)authorizationResponse
-                    dispatchQueue:(dispatch_queue_t)dispatchQueue
+           callbackDispatchQueue:(dispatch_queue_t)callbackDispatchQueue
                          callback:(OIDTokenCallback)callback {
 
   NSURLRequest *URLRequest = [request URLRequest];
@@ -463,7 +463,7 @@ originalAuthorizationResponse:authorizationResponse
           [OIDErrorUtilities errorWithCode:OIDErrorCodeNetworkError
                            underlyingError:error
                                description:errorDescription];
-      dispatch_async(dispatchQueue, ^{
+      dispatch_async(callbackDispatchQueue, ^{
         callback(nil, returnedError);
       });
       return;
@@ -492,7 +492,7 @@ originalAuthorizationResponse:authorizationResponse
             [OIDErrorUtilities OAuthErrorWithDomain:OIDOAuthTokenErrorDomain
                                       OAuthResponse:json
                                     underlyingError:serverError];
-          dispatch_async(dispatchQueue, ^{
+          dispatch_async(callbackDispatchQueue, ^{
             callback(nil, oauthError);
           });
           return;
@@ -508,7 +508,7 @@ originalAuthorizationResponse:authorizationResponse
           [OIDErrorUtilities errorWithCode:OIDErrorCodeServerError
                            underlyingError:serverError
                                description:errorDescription];
-      dispatch_async(dispatchQueue, ^{
+      dispatch_async(callbackDispatchQueue, ^{
         callback(nil, returnedError);
       });
       return;
@@ -526,7 +526,7 @@ originalAuthorizationResponse:authorizationResponse
           [OIDErrorUtilities errorWithCode:OIDErrorCodeJSONDeserializationError
                            underlyingError:jsonDeserializationError
                                description:errorDescription];
-      dispatch_async(dispatchQueue, ^{
+      dispatch_async(callbackDispatchQueue, ^{
         callback(nil, returnedError);
       });
       return;
@@ -540,7 +540,7 @@ originalAuthorizationResponse:authorizationResponse
           [OIDErrorUtilities errorWithCode:OIDErrorCodeTokenResponseConstructionError
                            underlyingError:jsonDeserializationError
                                description:@"Token response invalid."];
-      dispatch_async(dispatchQueue, ^{
+      dispatch_async(callbackDispatchQueue, ^{
         callback(nil, returnedError);
       });
       return;
@@ -561,7 +561,7 @@ originalAuthorizationResponse:authorizationResponse
           [OIDErrorUtilities errorWithCode:OIDErrorCodeIDTokenParsingError
                            underlyingError:nil
                                description:@"ID Token parsing failed"];
-        dispatch_async(dispatchQueue, ^{
+        dispatch_async(callbackDispatchQueue, ^{
           callback(nil, invalidIDToken);
         });
         return;
@@ -578,7 +578,7 @@ originalAuthorizationResponse:authorizationResponse
           [OIDErrorUtilities errorWithCode:OIDErrorCodeIDTokenFailedValidationError
                            underlyingError:nil
                                description:@"Issuer mismatch"];
-        dispatch_async(dispatchQueue, ^{
+        dispatch_async(callbackDispatchQueue, ^{
           callback(nil, invalidIDToken);
         });
         return;
@@ -594,7 +594,7 @@ originalAuthorizationResponse:authorizationResponse
           [OIDErrorUtilities errorWithCode:OIDErrorCodeIDTokenFailedValidationError
                            underlyingError:nil
                                description:@"Audience mismatch"];
-        dispatch_async(dispatchQueue, ^{
+        dispatch_async(callbackDispatchQueue, ^{
           callback(nil, invalidIDToken);
         });
         return;
@@ -620,7 +620,7 @@ originalAuthorizationResponse:authorizationResponse
             [OIDErrorUtilities errorWithCode:OIDErrorCodeIDTokenFailedValidationError
                              underlyingError:nil
                                  description:@"ID Token expired"];
-        dispatch_async(dispatchQueue, ^{
+        dispatch_async(callbackDispatchQueue, ^{
           callback(nil, invalidIDToken);
         });
         return;
@@ -638,7 +638,7 @@ originalAuthorizationResponse:authorizationResponse
           [OIDErrorUtilities errorWithCode:OIDErrorCodeIDTokenFailedValidationError
                            underlyingError:nil
                                description:message];
-        dispatch_async(dispatchQueue, ^{
+        dispatch_async(callbackDispatchQueue, ^{
           callback(nil, invalidIDToken);
         });
         return;
@@ -654,7 +654,7 @@ originalAuthorizationResponse:authorizationResponse
           [OIDErrorUtilities errorWithCode:OIDErrorCodeIDTokenFailedValidationError
                            underlyingError:nil
                                description:@"Nonce mismatch"];
-          dispatch_async(dispatchQueue, ^{
+          dispatch_async(callbackDispatchQueue, ^{
             callback(nil, invalidIDToken);
           });
           return;
@@ -669,7 +669,7 @@ originalAuthorizationResponse:authorizationResponse
     }
 
     // Success
-    dispatch_async(dispatchQueue, ^{
+    dispatch_async(callbackDispatchQueue, ^{
       callback(tokenResponse, nil);
     });
   }] resume];
